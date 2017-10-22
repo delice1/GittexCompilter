@@ -48,7 +48,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
   }
   private def getNonBlank(): Unit = {
-    while (isSpace(nextChar)) getChar
+    while (isSpace(nextChar))
+      nextChar = getChar //originally just getChar
   }
 
   override def getNextToken(): Unit = {
@@ -56,12 +57,12 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     //Ignore spaces and add the first character to token
     getNonBlank
     addChar()
-    getChar()
+    nextChar = getChar() //originally just getChar
 
     //Continue gathering characters for token
     while ((nextChar != '\n') && (nextChar != ' ') && (nextChar != '\t')){ //added not equal to tab
       addChar()
-      getChar()
+      nextChar = getChar() //originally just getChar
     }
 
     //Convert gathered character array token into a String
@@ -72,9 +73,9 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
 
   override def getChar(): Char = {
     if (position < sourceLine.length)
-      nextChar = sourceLine.charAt(position = position + 1)
+      sourceLine.charAt(position = position + 1)
     else
-      nextChar = '\n'
+      '\n'
   }
 
   //add legal lexems to language
