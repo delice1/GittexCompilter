@@ -34,16 +34,23 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   //Checks if current char is a space
-  private def isSpace(c: Char): Boolean = c == ' '
+  private def isSpace(c: Char): Boolean = {
+    c == ' '
+  }
+
+  var errorFound : Boolean = false
+  def setError() = errorFound = true
+  def resetError() = errorFound = false
 
   override def lookup(candidateToken: String): Boolean = {
     if (!lexems.contains(candidateToken)) {
-      Compiler.Parser.setError() //originally was Compiler.Parser.setError()
+      resetError()
+      setError() //originally was Compiler.Parser.setError()
       println("LEXICAL ERROR-'" + candidateToken + " ' not recognized.")
       false
     }
     else{
-      Compiler.currentToken = candidateToken
+      //Compiler.currentToken = candidateToken
       true
     }
   }
@@ -73,20 +80,20 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
 
   override def getChar(): Char = {
     if (position < sourceLine.length)
-      sourceLine.charAt(position = position + 1)
+      sourceLine.charAt({position +=1; position - 1})
     else
       '\n'
   }
 
   //add legal lexems to language
   private def initializeLexems(): Unit = {
-    "\BEGIN" :: lexems
-    "\END" :: lexems
-    "\TITLE" :: lexems
+    "\\BEGIN" :: lexems
+    "\\END" :: lexems
+    "\\TITLE" :: lexems
     "]" :: lexems
     "#" :: lexems
-    "\PARAB" :: lexems
-    "\PARAE" :: lexems
+    "\\PARAB" :: lexems
+    "\\PARAE" :: lexems
     "*" :: lexems
     "+" :: lexems
     "\\" :: lexems
@@ -94,9 +101,9 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     "(" :: lexems
     ")" :: lexems
     "![" :: lexems
-    "\DEF" :: lexems
+    "\\DEF" :: lexems
     "=" :: lexems
-    "\USE[" :: lexems
+    "\\USE[" :: lexems
     "A" :: lexems
     "B" :: lexems
     "C" :: lexems
