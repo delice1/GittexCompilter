@@ -4,7 +4,7 @@ import java.lang
 
 class MySyntaxAnalyzer extends SyntaxAnalyzer {
 
-  val TITLES : List[String] = List("\\TITLE")
+  val TITLES : List[String] = List(CONSTANTS.TITLEB, CONSTANTS.BRACKETE) //NEED TO ADD REQURIED TEXT HERE
 
   var errorFound : Boolean = false
   def setError() = errorFound = true
@@ -15,6 +15,22 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer {
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCB)){
       // add to parse tree / stack
       Compiler.Scanner.getNextToken()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+        variableDefine()
+      }
+      else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)) {
+        title()
+      }
+      body()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE))
+        {
+          //add to parse tree / stack
+          Compiler.Scanner.getNextToken()
+        }
+      else{
+        println("Error")
+        System.exit(1)
+      }
     }
     else {
       println("Error")
