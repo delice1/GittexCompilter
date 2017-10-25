@@ -78,19 +78,13 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     c == ' '
   }
 
-  var errorFound : Boolean = false
-  def setError() = errorFound = true
-  def resetError() = errorFound = false
-
   override def lookup(candidateToken: String): Boolean = {
     if (!lexems.contains(candidateToken)) {
-      resetError()
-      setError() //originally was Compiler.Parser.setError()
-      println("LEXICAL ERROR-'" + candidateToken + " ' not recognized.")
+      Compiler.Parser.setError()
+      println("LEXICAL ERROR-'" + candidateToken + "' not recognized.")
       false
     }
     else{
-      //Compiler.currentToken = candidateToken
       true
     }
   }
@@ -119,10 +113,12 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   override def getChar(): Char = {
-    println("testing getChar method")
-    println("pos" + position)
+    //println("testing getChar method")
+    //print("pos " + position)
+    //println(sourceLine)
+    //sourceLine.drop(1)
+    //println(", char " + sourceLine.charAt({position+=1; position-1}))
     if (position < sourceLine.length){
-      println("char " + sourceLine.charAt({position+=1; position-1}))
       sourceLine.charAt({position+=1; position-1})
     }
     else
