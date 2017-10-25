@@ -1,12 +1,17 @@
 package edu.towson.cis.cosc455.delice.project1
 
+import scala.collection.mutable.ListBuffer
+
 class MyLexicalAnalyzer extends LexicalAnalyzer {
   private var lexLength: Int = _
   private var lexeme: Array[Char] = new Array[Char](100)
-  private var lexems = List[String]() //changed to List
-  private var nextChar: Char = _
+  private var lexems = new ListBuffer[String]()
+  lexems.toList //Converts ListBuffer to a List
+  //private var lexems = List[String](CONSTANTS.DOCB, CONSTANTS.DOCE, "\n") //= (validLexems) //changed to List //NEED TO FIGURE OUT HOW TO GET INITIALIZE LEXEMS TO ADD TO THIS LIST
+  private var nextChar : Char = _
   private var sourceLine: String = _
   private var position: Int = _
+  //private val validLexems : List[String] = List(CONSTANTS.DOCB, CONSTANTS.DOCE)
 
   //Gets first lexeme
   def start(line: String): Unit = {
@@ -87,6 +92,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     else{
       true
     }
+    true
   }
   private def getNonBlank(): Unit = {
     while (isSpace(nextChar))
@@ -127,6 +133,32 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
 
   //add legal lexems to language
   private def initializeLexems(): Unit = {
+    //val validLexems : List[String] = List (CONSTANTS.DOCB)
+    lexems += CONSTANTS.DOCB
+    lexems += CONSTANTS.DOCE
+    lexems += CONSTANTS.TITLEB
+    lexems += CONSTANTS.BRACKETE
+    lexems += CONSTANTS.HEADING
+    lexems += CONSTANTS.PARAB
+    lexems += CONSTANTS.PARAE
+    lexems += CONSTANTS.BOLD
+    lexems += CONSTANTS.LISTITEM
+    lexems += CONSTANTS.NEWLINE
+    lexems += CONSTANTS.LINKB
+    lexems += CONSTANTS.ADDRESSB
+    lexems += CONSTANTS.ADDRESSE
+    lexems += CONSTANTS.IMAGEB
+    lexems += CONSTANTS.DEFB
+    lexems += CONSTANTS.EQSIGN
+    lexems += CONSTANTS.USEB
+    lexems ++= CONSTANTS.LETTERS
+    lexems ++= CONSTANTS.NUMBERSETC
+    lexems ++= CONSTANTS.WHITESPACE
+    lexems ++= CONSTANTS.VALIDTEXT
+
+    lexems += "\n"
+    //NEED TO CONTINUE WITH ALL OF THEM
+    /*
     CONSTANTS.DOCB :: lexems
     CONSTANTS.DOCE :: lexems
     CONSTANTS.TITLEB :: lexems
@@ -148,5 +180,6 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     CONSTANTS.NUMBERSETC :: lexems
     CONSTANTS.WHITESPACE :: lexems
     CONSTANTS.VALIDTEXT :: lexems
+    */
   }
 }
