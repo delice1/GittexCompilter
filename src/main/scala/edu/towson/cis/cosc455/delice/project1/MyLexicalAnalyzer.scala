@@ -13,13 +13,13 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     initializeLexems()
     sourceLine = line
     position = 0
-    getChar()
+    nextChar = getChar()
     getNextToken()
   }
 
   override def addChar(): Unit = {
     if (lexLength <= 98){
-      lexeme({lexLength += 1; lexLength -1}) = nextChar
+      lexeme({lexLength += 1; lexLength-1}) = nextChar
       lexeme(lexLength) = 0
     }
     else {
@@ -31,6 +31,46 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       getNonBlank
       addChar()
     }
+  }
+
+  private def getToken (c : Char):Unit = {
+    //While c is a space, tab, or new line, loop getChar until it is not a space
+    while (c == '\t' || c == '\n' || c == ' ')
+      getChar()
+    //switch statement for keywords
+    c match{
+      case '!' => image()
+      case '+' => listitem()
+      case '[' => link()
+      case '\\' => newline()
+      case '#' => heading()
+      case '*' => bold()
+    }
+  }
+
+  //called if token is image
+  private def image(): Unit = {
+
+  }
+  //called if token is list
+  private def listitem(): Unit = {
+
+  }
+  //called if token is link
+  private def link(): Unit = {
+
+  }
+  //called if token newline
+  private def newline() : Unit = {
+
+  }
+  //called if token heading
+  private def heading() : Unit = {
+
+  }
+  //called if token bold
+  private def bold() : Unit = {
+
   }
 
   //Checks if current char is a space
@@ -56,7 +96,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
   private def getNonBlank(): Unit = {
     while (isSpace(nextChar))
-      nextChar = getChar //originally just getChar
+      getChar
   }
 
   override def getNextToken(): Unit = {
@@ -79,56 +119,38 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   override def getChar(): Char = {
-    if (position < sourceLine.length)
-      sourceLine.charAt({position +=1; position - 1})
+    println("testing getChar method")
+    println("pos" + position)
+    if (position < sourceLine.length){
+      println("char " + sourceLine.charAt({position+=1; position-1}))
+      sourceLine.charAt({position+=1; position-1})
+    }
     else
       '\n'
   }
 
   //add legal lexems to language
   private def initializeLexems(): Unit = {
-    "\\BEGIN" :: lexems
-    "\\END" :: lexems
-    "\\TITLE" :: lexems
-    "]" :: lexems
-    "#" :: lexems
-    "\\PARAB" :: lexems
-    "\\PARAE" :: lexems
-    "*" :: lexems
-    "+" :: lexems
-    "\\" :: lexems
-    "[" :: lexems
-    "(" :: lexems
-    ")" :: lexems
-    "![" :: lexems
-    "\\DEF" :: lexems
-    "=" :: lexems
-    "\\USE[" :: lexems
-    "A" :: lexems
-    "B" :: lexems
-    "C" :: lexems
-    "D" :: lexems
-    "E" :: lexems
-    "F" :: lexems
-    "G" :: lexems
-    "H" :: lexems
-    "I" :: lexems
-    "J" :: lexems
-    "K" :: lexems
-    "L" :: lexems
-    "M" :: lexems
-    "N" :: lexems
-    "O" :: lexems
-    "P" :: lexems
-    "Q" :: lexems
-    "R" :: lexems
-    "S" :: lexems
-    "T" :: lexems
-    "U" :: lexems
-    "V" :: lexems
-    "W" :: lexems
-    "X" :: lexems
-    "Y" :: lexems
-    "Z" :: lexems
+    CONSTANTS.DOCB :: lexems
+    CONSTANTS.DOCE :: lexems
+    CONSTANTS.TITLEB :: lexems
+    CONSTANTS.BRACKETE :: lexems
+    CONSTANTS.HEADING :: lexems
+    CONSTANTS.PARAB :: lexems
+    CONSTANTS.PARAE :: lexems
+    CONSTANTS.BOLD :: lexems
+    CONSTANTS.LISTITEM :: lexems
+    CONSTANTS.NEWLINE :: lexems
+    CONSTANTS.LINKB :: lexems
+    CONSTANTS.ADDRESSB :: lexems
+    CONSTANTS.ADDRESSE :: lexems
+    CONSTANTS.IMAGEB :: lexems
+    CONSTANTS.DEFB :: lexems
+    CONSTANTS.EQSIGN :: lexems
+    CONSTANTS.USEB :: lexems
+    CONSTANTS.LETTERS :: lexems
+    CONSTANTS.NUMBERSETC :: lexems
+    CONSTANTS.WHITESPACE :: lexems
+    CONSTANTS.VALIDTEXT :: lexems
   }
 }
