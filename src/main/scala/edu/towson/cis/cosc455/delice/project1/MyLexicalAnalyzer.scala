@@ -5,13 +5,15 @@ import scala.collection.mutable.ListBuffer
 class MyLexicalAnalyzer extends LexicalAnalyzer {
   private var lexLength: Int = _
   private var lexeme: Array[Char] = new Array[Char](100)
-  private var lexems = new ListBuffer[String]()
+  private var lexems = new ListBuffer[String]() //https://alvinalexander.com/scala/how-add-elements-to-a-list-in-scala-listbuffer-immutable
   lexems.toList //Converts ListBuffer to a List
   //private var lexems = List[String](CONSTANTS.DOCB, CONSTANTS.DOCE, "\n") //= (validLexems) //changed to List //NEED TO FIGURE OUT HOW TO GET INITIALIZE LEXEMS TO ADD TO THIS LIST
   private var nextChar : Char = _
   private var sourceLine: String = _
   private var position: Int = _
   //private val validLexems : List[String] = List(CONSTANTS.DOCB, CONSTANTS.DOCE)
+  var parseTree = new scala.collection.mutable.Stack[String]
+  Compiler.currentToken = "!["
 
   //Gets first lexeme
   def start(line: String): Unit = {
@@ -38,61 +40,201 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
   }
 
-  private def getToken (c : Char):Unit = {
-    //While c is a space, tab, or new line, loop getChar until it is not a space
-    while (c == '\t' || c == '\n' || c == ' ')
-      getChar()
-    //switch statement for keywords
-    c match{
-      case '!' => image()
-      case '+' => listitem()
-      case '[' => link()
-      case '\\' => newline()
-      case '#' => heading()
-      case '*' => bold()
-    }
+  //called if token is text
+  private def text () : Unit = {
+    getChar()
+    addChar()
+    parseTree.push(Compiler.currentToken)
   }
-
   //called if token is image
   private def image(): Unit = {
-
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken == CONSTANTS.IMAGEB){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+        if (Compiler.currentToken == CONSTANTS.BRACKETE){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+          if (Compiler.currentToken == CONSTANTS.ADDRESSB){
+            parseTree.push(Compiler.currentToken)
+            getNextToken()
+            if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+              parseTree.push(Compiler.currentToken)
+              getNextToken()
+              if (Compiler.currentToken == CONSTANTS.ADDRESSE){
+                parseTree.push(Compiler.currentToken)
+                getNextToken() // not sure if i need
+                true
+              }
+              else println ("looking for addresse in image")
+            }
+            else println("looking for valid text in image")
+          }
+          else println("looking for addressb in image")
+        }
+        else println("looking for brackete in image")
+      }
+      else println("looking for valid text in image")
+    }
+    else println("looking for imageb in image")
   }
+
   //called if token is list
   private def listitem(): Unit = {
-
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      inneritem()
+      listitem()
+    }
+  }
+  private def inneritem() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equals(CONSTANTS.USEB)) {
+      variableuse()
+      inneritem()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+      bold()
+      inneritem()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
+      link()
+      inneritem()
+    }
+    else if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+      text()
+      inneritem()
+    }
+  }
+  private def variableuse() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+        }
+        else println ("error- brackete not found in variableuse")
+      }
+      else println ("error- looking for text in variableuse")
+    }
+    else println ("error- looking for useb in variableuse")
   }
   //called if token is link
   private def link(): Unit = {
-
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equals(CONSTANTS.LINKB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
+            parseTree.push(Compiler.currentToken)
+            getNextToken()
+            if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+              parseTree.push(Compiler.currentToken)
+              getNextToken()
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
+                parseTree.push(Compiler.currentToken)
+                getNextToken()
+              }
+              else{
+                println("Error- looking for addresse in link")
+              }
+            }
+            else{
+              println("Error- looking for required text in link")
+            }
+          }
+          else{
+            println(("error- looking for addressb in link"))
+          }
+        }
+        else{
+          print("error- looking for brackete in link")
+        }
+      }
+      else{
+        println("error- looking for required text in link")
+      }
+    }
+    else{
+      println("looking for linkb in link")
+    }
   }
   //called if token newline
   private def newline() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken == CONSTANTS.NEWLINE) {
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+    }
 
   }
   //called if token heading
   private def heading() : Unit = {
-
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken == CONSTANTS.HEADING){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+      }
+    }
   }
   //called if token bold
   private def bold() : Unit = {
-
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+        }
+        else {
+          println("Looking for bold in bold function")
+          Compiler.Parser.setError()
+          System.exit(1)
+      }
+    }
+      else{
+      println("Looking for bold in bold function")
+      }
+    }
   }
 
   //Checks if current char is a space
   private def isSpace(c: Char): Boolean = {
     c == ' '
   }
-
   override def lookup(candidateToken: String): Boolean = {
     if (!lexems.contains(candidateToken)) {
       Compiler.Parser.setError()
       println("LEXICAL ERROR-'" + candidateToken + "' not recognized.")
+      //System.exit(1)
       false
     }
     else{
       true
     }
-    true
   }
   private def getNonBlank(): Unit = {
     while (isSpace(nextChar))
@@ -114,16 +256,21 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
 
     //Convert gathered character array token into a String
     val newToken: String = new String(lexeme)
+
     if (lookup(newToken.substring(0, lexLength)))
       Compiler.currentToken_$eq(newToken.substring(0,lexLength))
-  }
 
+    nextChar match{
+      case '!' => image()
+      case '+' => listitem()
+      case '[' => link()
+      case '\\' => newline()
+      case '#' => heading()
+      case '*' => bold()
+      case default => text()
+    }
+  }
   override def getChar(): Char = {
-    //println("testing getChar method")
-    //print("pos " + position)
-    //println(sourceLine)
-    //sourceLine.drop(1)
-    //println(", char " + sourceLine.charAt({position+=1; position-1}))
     if (position < sourceLine.length){
       sourceLine.charAt({position+=1; position-1})
     }
@@ -142,7 +289,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     lexems += CONSTANTS.PARAB
     lexems += CONSTANTS.PARAE
     lexems += CONSTANTS.BOLD
-    lexems += CONSTANTS.LISTITEM
+    lexems += CONSTANTS.LISTITEMB
     lexems += CONSTANTS.NEWLINE
     lexems += CONSTANTS.LINKB
     lexems += CONSTANTS.ADDRESSB

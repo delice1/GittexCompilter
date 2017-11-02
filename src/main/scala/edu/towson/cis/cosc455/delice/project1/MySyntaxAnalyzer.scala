@@ -4,7 +4,7 @@ import java.lang
 
 class MySyntaxAnalyzer extends SyntaxAnalyzer {
 
-  val TITLES : List[String] = List(CONSTANTS.TITLEB, CONSTANTS.BRACKETE) //NEED TO ADD REQURIED TEXT HERE
+  val TITLES : List[String] = List(CONSTANTS.TITLEB, CONSTANTS.BRACKETE) //CONSTANTS.VALIDTEXT
 
   var errorFound : Boolean = false
   def setError() = errorFound = true
@@ -65,10 +65,10 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer {
   override def title(): Unit = {
     if(TITLES contains Compiler.currentToken)
       Compiler.Scanner.getNextToken()
-    else(
+    else {
       println("SYNTAX ERROR - A title was expected when '" + Compiler.currentToken + "' was found.")
       setError()
-    )
+    }
   }
 
   override def variableDefine(): Unit = ???
