@@ -7,13 +7,10 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   private var lexeme: Array[Char] = new Array[Char](100)
   private var lexems = new ListBuffer[String]() //https://alvinalexander.com/scala/how-add-elements-to-a-list-in-scala-listbuffer-immutable
   lexems.toList //Converts ListBuffer to a List
-  //private var lexems = List[String](CONSTANTS.DOCB, CONSTANTS.DOCE, "\n") //= (validLexems) //changed to List //NEED TO FIGURE OUT HOW TO GET INITIALIZE LEXEMS TO ADD TO THIS LIST
   private var nextChar : Char = _
   private var sourceLine: String = _
   private var position: Int = _
-  //private val validLexems : List[String] = List(CONSTANTS.DOCB, CONSTANTS.DOCE)
   var parseTree = new scala.collection.mutable.Stack[String]
-  Compiler.currentToken = "!["
 
   //Gets first lexeme
   def start(line: String): Unit = {
@@ -46,6 +43,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     addChar()
     parseTree.push(Compiler.currentToken)
   }
+
   //called if token is image
   private def image(): Unit = {
     lookup(Compiler.currentToken)
@@ -92,6 +90,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       listitem()
     }
   }
+
+  //inner item for the grammar
   private def inneritem() : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equals(CONSTANTS.USEB)) {
@@ -111,6 +111,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       inneritem()
     }
   }
+
   private def variableuse() : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
@@ -129,6 +130,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
     else println ("error- looking for useb in variableuse")
   }
+
   //called if token is link
   private def link(): Unit = {
     lookup(Compiler.currentToken)
@@ -151,39 +153,163 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
                 parseTree.push(Compiler.currentToken)
                 getNextToken()
               }
-              else{
-                println("Error- looking for addresse in link")
-              }
+              else     println("Error- looking for addresse in link")
             }
-            else{
-              println("Error- looking for required text in link")
+            else   println("Error- looking for required text in link")
             }
-          }
-          else{
-            println(("error- looking for addressb in link"))
-          }
+          else   println(("error- looking for addressb in link"))
         }
-        else{
-          print("error- looking for brackete in link")
-        }
+        else  print("error- looking for brackete in link")
       }
-      else{
-        println("error- looking for required text in link")
-      }
+      else   println("error- looking for required text in link")
     }
-    else{
-      println("looking for linkb in link")
-    }
+    else  println("looking for linkb in link")
   }
-  //called if token newline
+
+  //called if token newline, title, paragraph, variable define, or begin/end
   private def newline() : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken == CONSTANTS.NEWLINE) {
       parseTree.push(Compiler.currentToken)
       getNextToken()
     }
-
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCB)) {
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE)) {
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
+    title()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)) {
+      //call paragraph
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+      //call variabledefine
+    }
+    else{
+      println("error- newline error")
+    }
   }
+
+  private def paragraph() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)) {
+        variabledefine()
+        getNextToken()
+        if ((Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)) || (Compiler.currentToken == CONSTANTS.VALIDTEXT)) {
+          innertext()
+          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAE)) {
+            parseTree.push(Compiler.currentToken)
+            getNextToken()
+          }
+          else println ("parae expected in paragraph")
+        }
+        else println ("inner text expected in paragraph")
+      }
+      else println ("defb expected in paragraph")
+    }
+    else println ("parab expected in paragraph")
+  }
+
+  private def innertext() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)) {
+      variableuse()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)) {
+      heading()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)) {
+      bold()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)) {
+      listitem()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) {
+      image()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)) {
+      link()
+      getNextToken()
+      innertext()
+    }
+    else if (Compiler.currentToken == CONSTANTS.VALIDTEXT) {
+      text()
+      getNextToken()
+    }
+  }
+
+
+  private def variabledefine() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        text()
+        getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.EQSIGN)){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+          if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+            text()
+            getNextToken()
+            if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+              parseTree.push(Compiler.currentToken)
+              getNextToken()
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+                variabledefine()
+                getNextToken()
+              }
+              else println ("defb not found in variabledefine")
+            }
+            else println ("brackete not found in variabledefine")
+          }
+          else println("validtext not found in variable define")
+        }
+        else println("equal sign not found in variable define")
+      }
+      else println ("valid text not found in variable define")
+    }
+    else println("defb not found in variable define")
+  }
+
+  private def title() : Unit = {
+    lookup(Compiler.currentToken)
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
+      parseTree.push(Compiler.currentToken)
+      getNextToken()
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+        text()
+        getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          getNextToken()
+        }
+        else println ("brackete missing in title")
+      }
+      else println("text missing in title")
+    }
+    else println ("titleb missing in title")
+  }
+
   //called if token heading
   private def heading() : Unit = {
     lookup(Compiler.currentToken)
@@ -191,11 +317,12 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       parseTree.push(Compiler.currentToken)
       getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        parseTree.push(Compiler.currentToken)
+        text()
         getNextToken()
       }
     }
   }
+
   //called if token bold
   private def bold() : Unit = {
     lookup(Compiler.currentToken)
@@ -203,7 +330,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       parseTree.push(Compiler.currentToken)
       getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        parseTree.push(Compiler.currentToken)
+        text()
         getNextToken()
         if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
           parseTree.push(Compiler.currentToken)
@@ -215,9 +342,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
           System.exit(1)
       }
     }
-      else{
-      println("Looking for bold in bold function")
-      }
+      else   println("Looking for bold in bold function")
     }
   }
 
@@ -225,6 +350,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   private def isSpace(c: Char): Boolean = {
     c == ' '
   }
+
   override def lookup(candidateToken: String): Boolean = {
     if (!lexems.contains(candidateToken)) {
       Compiler.Parser.setError()
@@ -267,9 +393,10 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       case '\\' => newline()
       case '#' => heading()
       case '*' => bold()
-      case default => text()
+      case default => text() //sometehings wrong with text! need to change!
     }
   }
+
   override def getChar(): Char = {
     if (position < sourceLine.length){
       sourceLine.charAt({position+=1; position-1})
@@ -303,7 +430,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     lexems ++= CONSTANTS.WHITESPACE
     lexems ++= CONSTANTS.VALIDTEXT
 
-    lexems += "\n"
+    //lexems += "\n"
     //NEED TO CONTINUE WITH ALL OF THEM
     /*
     CONSTANTS.DOCB :: lexems
