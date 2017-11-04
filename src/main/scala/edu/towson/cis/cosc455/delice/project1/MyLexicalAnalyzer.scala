@@ -46,14 +46,16 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   private def getToken() : Unit = {
     //Compiler.currentToken = "\\BEGIN"
 
+    /*
     lexLength = 0
     //Ignore spaces and add the first character to token
     getNonBlank()
     addChar()
     nextChar = getChar() //originally just getChar
+    */
 
     //Continue gathering characters for token
-    while ((nextChar != '\n') && (nextChar != ' ') && (nextChar != '\t')) { //added not equal to tab
+    while ((nextChar != '\n') && (nextChar != ' ') && (nextChar != '\t')) { //added not equal to tab //it finds a space so it stops processing token
       addChar()
       nextChar = getChar() //originally just getChar
     }
@@ -65,8 +67,9 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       Compiler.currentToken_$eq(newTokens.substring(0, lexLength))
     println("current token in getToken is " + Compiler.currentToken)
 
-    val chr : Char = Compiler.currentToken.head
-    caseswitch(chr)
+    val str : String = Compiler.currentToken.head.toString
+    println(str)
+    caseswitch(str)
     /*
     nextChar match {
       case '!' => image(); lookup(Compiler.currentToken)
@@ -101,15 +104,15 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     */
   }
 
-  private def caseswitch(c : Char) = {
-    c match{
-      case '!' => image(); lookup(Compiler.currentToken)
-      case '+' => listitem(); lookup(Compiler.currentToken)
-      case '[' => link(); lookup(Compiler.currentToken)
-      case '\\' => newline(); lookup(Compiler.currentToken)
-      case '#' => heading(); lookup(Compiler.currentToken)
-      case '*' => bold(); lookup(Compiler.currentToken)
-      case default => text() //somethings wrong with text! need to change!
+  private def caseswitch(str : String) = {
+    str match{
+      case "!" => image(); lookup(Compiler.currentToken)
+      case "+" => listitem(); lookup(Compiler.currentToken)
+      case "[" => link(); lookup(Compiler.currentToken)
+      case "\\" => newline(); lookup(Compiler.currentToken)
+      case "#" => heading(); lookup(Compiler.currentToken)
+      case "*" => bold(); lookup(Compiler.currentToken)
+      case default => println("default case reached"); text() //somethings wrong with text! need to change!
     }
   }
 
@@ -136,12 +139,14 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   override def getNextToken(): Unit = {
+    /*
     lexLength = 0
     //Ignore spaces and add the first character to token
     getNonBlank()
     addChar()
     nextChar = getChar()
     // nextChar = getChar() //originally just getChar
+    */
 
     //Continue gathering characters for token
     while ((nextChar != '\n') && (nextChar != ' ') && (nextChar != '\t')){ //added not equal to tab
@@ -218,7 +223,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
   //called if token is text
   private def text () : Unit = {
-    getChar()
+    println("tell ma i made it to text")
+    nextChar = getChar()
     addChar()
     parseTree.push(Compiler.currentToken)
   }
@@ -226,43 +232,45 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   //called if token is image
   private def image(): Unit = {
     //lookup(Compiler.currentToken)
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)){
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) {
       println("hello1")
-      parseTree.push(Compiler.currentToken)
-      lookup(Compiler.currentToken)
+      //parseTree.push(Compiler.currentToken)
+      //lookup(Compiler.currentToken)
       //getNextToken()
-      //println("current token now is " + Compiler.currentToken)
-      //if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        //println("hello2")
-        //parseTree.push(Compiler.currentToken)
-        //getNextToken()
-        if (Compiler.currentToken == CONSTANTS.BRACKETE){
+      println("current token now is " + Compiler.currentToken)
+      if (Compiler.currentToken == CONSTANTS.VALIDTEXT) {
+        println("hello2")
+        parseTree.push(Compiler.currentToken)
+        getNextToken()
+        //Compiler.currentToken = "]"
+        println("current token here is " + Compiler.currentToken)
+        if (Compiler.currentToken == CONSTANTS.BRACKETE) {
           print("contains brackete")
-          parseTree.push(Compiler.currentToken)
+          //parseTree.push(Compiler.currentToken)
           //getNextToken()
-          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
+          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)) {
             parseTree.push(Compiler.currentToken)
             //getNextToken()
-            if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+            if (Compiler.currentToken == CONSTANTS.VALIDTEXT) {
               parseTree.push(Compiler.currentToken)
               //getNextToken()
-              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)) {
                 parseTree.push(Compiler.currentToken)
                 //getNextToken() // not sure if i need
                 //true
               }
-              else println ("looking for addresse in image")
+              else println("looking for addresse in image")
             }
             else println("looking for valid text in image")
           }
           else println("looking for addressb in image")
         }
         else println("looking for brackete in image")
-      //}
-      //else println("looking for valid text in image")
+        }
+        else println("looking for valid text in image")
+      }
+      else println("looking for imageb in image")
     }
-    else println("looking for imageb in image")
-  }
 
   //called if token is list
   private def listitem(): Unit = {
@@ -487,7 +495,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
 
   private def title() : Unit = {
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
-      parseTree.push(Compiler.currentToken)
+      //parseTree.push(Compiler.currentToken)
       //getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
         text()
@@ -498,14 +506,14 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
         }
         else println ("brackete missing in title")
       }
-      else println("text missing in title")
+      else println("Error: text missing in title")
     }
     else println ("titleb missing in title")
   }
 
   //called if token heading
   private def heading() : Unit = {
-    lookup(Compiler.currentToken)
+    //lookup(Compiler.currentToken)
     if (Compiler.currentToken == CONSTANTS.HEADING){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
