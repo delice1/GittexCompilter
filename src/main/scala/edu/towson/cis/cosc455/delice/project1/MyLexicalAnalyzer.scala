@@ -1,6 +1,7 @@
 package edu.towson.cis.cosc455.delice.project1
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 class MyLexicalAnalyzer extends LexicalAnalyzer {
   private var lexLength: Int = _
@@ -58,18 +59,23 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     while ((nextChar != '\n') && (nextChar != ' ') && (nextChar != '\t')) { //added not equal to tab //it finds a space so it stops processing token
       addChar()
       nextChar = getChar() //originally just getChar
+      //println(nextChar)
     }
-
+    println("testing 123")
     //Convert gathered character array token into a String
     val newTokens: String = new String(lexeme)
-
+    //println("new token " + newTokens)
+    //val stringfromarray = newTokens.mkString("")
+    //println("stringfromarray" + stringfromarray.length)
+    //println("new token converting to a string is  : " + newTokens.mkString(""))
+    //println("new token converting to a string length is : " + newTokens.mkString.length)
     if (lookup(newTokens.substring(0, lexLength)))
       Compiler.currentToken_$eq(newTokens.substring(0, lexLength))
-    println("current token in getToken is " + Compiler.currentToken)
+    println("current token in newTokens is " + newTokens)
 
-    val str : String = Compiler.currentToken.head.toString
-    println(str)
-    caseswitch(str)
+    val str : String = newTokens.head.toString
+    println("str is " + str)
+    caseswitch(str, newTokens)
     /*
     nextChar match {
       case '!' => image(); lookup(Compiler.currentToken)
@@ -104,15 +110,15 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     */
   }
 
-  private def caseswitch(str : String) = {
+  private def caseswitch(str : String, newTokens : String) = {
     str match{
-      case "!" => image(); lookup(Compiler.currentToken)
-      case "+" => listitem(); lookup(Compiler.currentToken)
-      case "[" => link(); lookup(Compiler.currentToken)
-      case "\\" => newline(); lookup(Compiler.currentToken)
-      case "#" => heading(); lookup(Compiler.currentToken)
-      case "*" => bold(); lookup(Compiler.currentToken)
-      case default => println("default case reached"); text() //somethings wrong with text! need to change!
+      case "!" => image(newTokens); lookup(newTokens)
+      case "+" => listitem(newTokens); lookup(newTokens)
+      case "[" => link(newTokens); lookup(newTokens)
+      case "\\" => newline(newTokens); lookup(newTokens)
+      case "#" => heading(newTokens); lookup(newTokens)
+      case "*" => bold(newTokens); lookup(newTokens)
+      case default => println("default case reached"); text(newTokens) //somethings wrong with text! need to change!
     }
   }
 
@@ -122,7 +128,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   override def lookup(candidateToken: String): Boolean = {
-    println("Candidate token in lookup is " + candidateToken)
+    println("Candidate token in lookup is '" + candidateToken + "'")
+    //println("lexems in lookup are : " + lexems)
     if (!lexems.contains(candidateToken)) {
       Compiler.Parser.setError()
       println("LEXICAL ERROR-'" + candidateToken + "' not recognized.")
@@ -155,7 +162,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
 
     //Convert gathered character array token into a String
-    val newToken: String = new String(lexeme)
+    var newToken: String = new String(lexeme)
 
     if (lookup(newToken.substring(0, lexLength)))
       Compiler.currentToken_$eq(newToken.substring(0,lexLength))
@@ -222,28 +229,28 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     */
   }
   //called if token is text
-  private def text () : Unit = {
+  private def text (newTokens : String) : Unit = {
     println("tell ma i made it to text")
     nextChar = getChar()
     addChar()
-    parseTree.push(Compiler.currentToken)
+    //parseTree.push(Compiler.currentToken)
   }
 
   //called if token is image
-  private def image(): Unit = {
+  private def image(newTokens : String): Unit = {
     //lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) {
       println("hello1")
       //parseTree.push(Compiler.currentToken)
       //lookup(Compiler.currentToken)
       //getNextToken()
-      println("current token now is " + Compiler.currentToken)
+      println("current token now is " + newTokens)
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT) {
         println("hello2")
-        parseTree.push(Compiler.currentToken)
-        getNextToken()
+        //parseTree.push(Compiler.currentToken)
+        //getNextToken(newTokens)
         //Compiler.currentToken = "]"
-        println("current token here is " + Compiler.currentToken)
+        println("current token here is " + newTokens)
         if (Compiler.currentToken == CONSTANTS.BRACKETE) {
           print("contains brackete")
           //parseTree.push(Compiler.currentToken)
@@ -273,39 +280,41 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
 
   //called if token is list
-  private def listitem(): Unit = {
+  private def listitem(newTokens : String): Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
-      inneritem()
-      listitem()
+      inneritem(newTokens)
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
+        listitem(newTokens)
+      }
     }
   }
 
   //inner item for the grammar
-  private def inneritem() : Unit = {
+  private def inneritem(newTokens : String) : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equals(CONSTANTS.USEB)) {
-      variableuse()
-      inneritem()
+      variableuse(newTokens)
+      inneritem(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
-      bold()
-      inneritem()
+      bold(newTokens)
+      inneritem(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
-      link()
-      inneritem()
+      link(newTokens)
+      inneritem(newTokens)
     }
     else if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-      text()
-      inneritem()
+      text(newTokens)
+      inneritem(newTokens)
     }
   }
 
-  private def variableuse() : Unit = {
-    lookup(Compiler.currentToken)
+  private def variableuse(newTokens : String) : Unit = {
+    //lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
@@ -324,24 +333,24 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   //called if token is link
-  private def link(): Unit = {
-    lookup(Compiler.currentToken)
-    if (Compiler.currentToken.equals(CONSTANTS.LINKB)){
+  private def link(newTokens : String): Unit = {
+    //lookup(Compiler.currentToken)
+    if (newTokens.equals(CONSTANTS.LINKB)){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
-      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+      if (newTokens == CONSTANTS.VALIDTEXT){
         parseTree.push(Compiler.currentToken)
         //getNextToken()
-        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+        if (newTokens.equalsIgnoreCase(CONSTANTS.BRACKETE)){
           parseTree.push(Compiler.currentToken)
           //getNextToken()
-          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
+          if (newTokens.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
             parseTree.push(Compiler.currentToken)
             //getNextToken()
-            if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
+            if (newTokens == CONSTANTS.VALIDTEXT){
               parseTree.push(Compiler.currentToken)
               //getNextToken()
-              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
+              if (newTokens.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
                 parseTree.push(Compiler.currentToken)
                 //getNextToken()
               }
@@ -359,8 +368,9 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
   }
 
   //called if token newline, title, paragraph, variable define, or begin/end
-  private def newline() : Unit = {
-    println("current token in newline " + Compiler.currentToken)
+  private def newline(newTokens : String) : Unit = {
+    println("current token in newline " + newTokens)
+    println("substring : " + newTokens.substring(0,7))
     //lookup(Compiler.currentToken)
     //Compiler.currentToken = "\\BEGIN"
     //getNextToken()
@@ -383,30 +393,30 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       parseTree.push(Compiler.currentToken)
       //getNextToken()
     }
-    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
-      title()
+    else if (newTokens.substring(0,7).equalsIgnoreCase(CONSTANTS.TITLEB)){
+      title(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)) {
-      //call paragraph
+      paragraph(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
-      //call variabledefine
+      variabledefine(newTokens)
     }
     else{
       println("error- newline error")
     }
   }
 
-  private def paragraph() : Unit = {
+  private def paragraph(newTokens : String) : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)) {
-        variabledefine()
+        variabledefine(newTokens)
         //getNextToken()
         if ((Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) || (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)) || (Compiler.currentToken == CONSTANTS.VALIDTEXT)) {
-          innertext()
+          innertext(newTokens)
           if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAE)) {
             parseTree.push(Compiler.currentToken)
             //getNextToken()
@@ -420,64 +430,64 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     else println ("parab expected in paragraph")
   }
 
-  private def innertext() : Unit = {
+  private def innertext(newTokens : String) : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)) {
-      variableuse()
+      variableuse(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)) {
-      heading()
+      heading(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)) {
-      bold()
+      bold(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)) {
-      listitem()
+      listitem(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)) {
-      image()
+      image(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)) {
-      link()
+      link(newTokens)
       //getNextToken()
-      innertext()
+      innertext(newTokens)
     }
     else if (Compiler.currentToken == CONSTANTS.VALIDTEXT) {
-      text()
+      text(newTokens)
       //getNextToken()
     }
   }
 
 
-  private def variabledefine() : Unit = {
+  private def variabledefine(newTokens : String) : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
       parseTree.push(Compiler.currentToken)
       //getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        text()
+        text(newTokens)
         //getNextToken()
         if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.EQSIGN)){
           parseTree.push(Compiler.currentToken)
           //getNextToken()
           if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-            text()
+            text(newTokens)
             //getNextToken()
             if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
               parseTree.push(Compiler.currentToken)
               //getNextToken()
               if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
-                variabledefine()
+                variabledefine(newTokens)
                 //getNextToken()
               }
               else println ("defb not found in variabledefine")
@@ -493,48 +503,81 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     else println("defb not found in variable define")
   }
 
-  private def title() : Unit = {
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
+  private def title(newTokens : String) : Unit = {
+    if (newTokens.substring(0,7).equalsIgnoreCase(CONSTANTS.TITLEB)){
+      println("new tokens is " + newTokens)
+      var removeBracket = newTokens.replace("]","")
+      println("remove bracket " + removeBracket)
+      println("token trimmed is " + removeBracket.substring(7,newTokens.length - 1))
+      //println("substring " + newTokens.substring(7,removeBracket.length))
       //parseTree.push(Compiler.currentToken)
       //getNextToken()
-      if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        text()
+      println(removeBracket.substring(7,newTokens.length() - 1) == CONSTANTS.VALIDTEXT)
+
+      /*
+      if (removeBracket.substring(7,newTokens.length() - 1) == CONSTANTS.VALIDTEXT){
+        println("made it to text in title")
+        text(newTokens)
         //getNextToken()
-        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
-          parseTree.push(Compiler.currentToken)
+        */
+      //var arraytolist = lexeme.toList
+      //var string1 = lexeme.toString
+
+      val newlexeme = scala.collection.mutable.Set()++lexeme
+      println("THE NEW LEXEME IS " + newlexeme.size)
+
+      //val newArray = lexeme.filter(_ == ' ')
+      //println("new array is " + newArray)
+      //println("new array length is " + newArray.length)
+
+      //println("array to list is : " + lexeme.toList)
+      //println("last element : " + lexeme.last)
+      //println("new token later is " + newTokens)
+      //var newTokensLength = newTokens.size - 89
+      //println("length is " + newTokensLength)
+      //var x = newTokens.charAt(newTokensLength)
+      //println("x is : " + x)
+      //println("tail is " + newTokens.charAt(newTokensLength))
+        if (newTokens.charAt(newlexeme.size).toString == (CONSTANTS.BRACKETE)){
+          println("magically found a bracket")
+          //parseTree.push(Compiler.currentToken)
           //getNextToken()
         }
         else println ("brackete missing in title")
       }
+      /*
       else println("Error: text missing in title")
     }
+    */
     else println ("titleb missing in title")
   }
 
   //called if token heading
-  private def heading() : Unit = {
+  private def heading(newTokens : String) : Unit = {
     //lookup(Compiler.currentToken)
     if (Compiler.currentToken == CONSTANTS.HEADING){
+      println("made it")
       parseTree.push(Compiler.currentToken)
       //getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        text()
+        text(newTokens)
         //getNextToken()
       }
+      else println("Error: looking for text in heading")
     }
   }
 
   //called if token bold
-  private def bold() : Unit = {
+  private def bold(newTokens : String) : Unit = {
     lookup(Compiler.currentToken)
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
-      parseTree.push(Compiler.currentToken)
+      //parseTree.push(Compiler.currentToken)
       //getNextToken()
       if (Compiler.currentToken == CONSTANTS.VALIDTEXT){
-        text()
+        text(newTokens)
         //getNextToken()
         if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
-          parseTree.push(Compiler.currentToken)
+          //parseTree.push(Compiler.currentToken)
           //getNextToken()
         }
         else {
