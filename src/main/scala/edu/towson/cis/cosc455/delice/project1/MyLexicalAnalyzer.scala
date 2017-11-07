@@ -5,6 +5,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class MyLexicalAnalyzer extends LexicalAnalyzer {
   private var lexLength: Int = _
+  //private var lexeme = new ListBuffer[Char]()
   private var lexeme: Array[Char] = new Array[Char](100)
   private var lexems = new ListBuffer[String]() //https://alvinalexander.com/scala/how-add-elements-to-a-list-in-scala-listbuffer-immutable
   lexems.toList //Converts ListBuffer to a List
@@ -63,6 +64,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
     println("testing 123")
     //Convert gathered character array token into a String
+
+    //val testing = lexeme.toArray
     val newTokens: String = new String(lexeme)
     //println("new token " + newTokens)
     //val stringfromarray = newTokens.mkString("")
@@ -162,7 +165,8 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     }
 
     //Convert gathered character array token into a String
-    var newToken: String = new String(lexeme)
+    //val testing = lexeme.toArray
+    val newToken: String = new String(lexeme)
 
     if (lookup(newToken.substring(0, lexLength)))
       Compiler.currentToken_$eq(newToken.substring(0,lexLength))
@@ -512,7 +516,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       //println("substring " + newTokens.substring(7,removeBracket.length))
       //parseTree.push(Compiler.currentToken)
       //getNextToken()
-      println(removeBracket.substring(7,newTokens.length() - 1) == CONSTANTS.VALIDTEXT)
+      //println(removeBracket.substring(7,newTokens.length() - 1) == CONSTANTS.VALIDTEXT)
 
       /*
       if (removeBracket.substring(7,newTokens.length() - 1) == CONSTANTS.VALIDTEXT){
@@ -523,22 +527,26 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       //var arraytolist = lexeme.toList
       //var string1 = lexeme.toString
 
-      val newlexeme = scala.collection.mutable.Set()++lexeme
-      println("THE NEW LEXEME IS " + newlexeme.size)
+      //val trying = scala.collection.mutable.ListBuffer lexeme
+      val converArrayToListBuffer = ListBuffer(lexeme:_*)
+      //println("convertArrayToListBuffer " + converArrayToListBuffer)
+      val convertListBufferToString = converArrayToListBuffer.mkString(" ")
+      //println("convertListBufferToString '" + convertListBufferToString + "'")
+      val trimConverListBufferToString = convertListBufferToString.trim
+      //println("trimConvertListBufferToString '" + trimConverListBufferToString + "'")
+      val trimConvertListBufferToStringReplacingSpaces = trimConverListBufferToString.replaceAll(" ","")
+      //println("trimConvertListBufferToStringRplacingSpcaes '" + trimConvertListBufferToStringReplacingSpaces + "'")
+      //val tryingmoremore = tryingevenmore.toList
+      //println("tryingmoremore '" + tryingmoremore + "'" )
+      //println("tryingevenmoremore length " + trimConvertListBufferToStringReplacingSpaces.length)
+      var finalLength : Int = trimConvertListBufferToStringReplacingSpaces.length-1
+      //println("tryinevenmoremore length minus 1 " + finalLength)
 
-      //val newArray = lexeme.filter(_ == ' ')
-      //println("new array is " + newArray)
-      //println("new array length is " + newArray.length)
-
-      //println("array to list is : " + lexeme.toList)
-      //println("last element : " + lexeme.last)
-      //println("new token later is " + newTokens)
-      //var newTokensLength = newTokens.size - 89
-      //println("length is " + newTokensLength)
-      //var x = newTokens.charAt(newTokensLength)
-      //println("x is : " + x)
-      //println("tail is " + newTokens.charAt(newTokensLength))
-        if (newTokens.charAt(newlexeme.size).toString == (CONSTANTS.BRACKETE)){
+      //val newlexeme = scala.collection.mutable.Set()++lexeme //a set cannot contain duplicate elements... that's why it isn't working
+      println("NEW LEXEME IS " + trimConvertListBufferToStringReplacingSpaces)
+      println("THE NEW LEXEME SIZE IS " + finalLength)
+      
+        if (newTokens.charAt(trimConvertListBufferToStringReplacingSpaces.size-1).toString == (CONSTANTS.BRACKETE)){
           println("magically found a bracket")
           //parseTree.push(Compiler.currentToken)
           //getNextToken()
