@@ -1,8 +1,7 @@
 package edu.towson.cis.cosc455.delice.project1
 
-import scala.io.Source
-
-object Compiler {
+object Compiler
+{
   var currentToken : String = ""
   var fileContents : String = ""
 
@@ -10,34 +9,31 @@ object Compiler {
   val Parser = new MySyntaxAnalyzer
   val SemanticAnalyzer = new MySemanticAnalyzer
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
+  {
     checkFile(args)
     readFile(args(0))
 
-
-    Scanner.getNextToken()
+    Parser.gittex()
   }
 
-  def readFile(file : String) = {
+  def readFile(file : String) =
+  {
     val source = scala.io.Source.fromFile(file)
-    for (line <-Source.fromFile(file).getLines()){
-      Scanner.start(line)
-
-      println(line) //need to change to open up html page
-      //Parser.gittex()
-    }
     fileContents = try source.mkString finally source.close()
+    Scanner.start(fileContents)
   }
 
-  def checkFile(args : Array[String]) = {
-    if (args.length != 1) {
-      println(args.length)
-      println("USAGE ERROR: wrong number of args fool!")
+  def checkFile(args : Array[String]) =
+  {
+    if (args.length != 1)
+    {
+      println("USAGE ERROR: wrong number of arguments.")
       System.exit(1)
     }
-    else if (!args(0).endsWith(".gtx")) {
-      println(args(0))
-      println("USAGE ERROR: wrong extension fool!")
+    else if (!args(0).endsWith(".gtx"))
+    {
+      println("USAGE ERROR: wrong extension, the file should be a .gtx file.")
       System.exit(1)
     }
   }
