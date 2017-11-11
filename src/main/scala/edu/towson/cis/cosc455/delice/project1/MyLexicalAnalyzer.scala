@@ -4,42 +4,31 @@ import scala.collection.mutable.ListBuffer
 
 class MyLexicalAnalyzer extends LexicalAnalyzer {
 
-  //private var lexLength : Int = _
-  private var lexeme: String = "" //changed to string
+  //Initial Declarations
+  private var lexeme: String = ""
   private var lexems = new ListBuffer[String]
-  var sourceLine: List[Char] = Nil   //changed to list
+  var sourceLine: List[Char] = Nil
   private var nextChar: Char = ' '
-  //private var position: Int = _
 
-  //Lexical analyzer begins here
+  //Start- Beginning of Lexical Analyzer
   def start(line: String): Unit = {
-    print("IN START")
     initializeLexems()
-    sourceLine = line.toList //converts line to a list
-    //position = 0
-    getNextToken() //calls getNextToken function
-    caseswitch(nextChar)
+    sourceLine = line.toList
+    getNextToken()
   }
 
-  //adds nextChar to lexeme
+  //Adds nextChar to lexeme
   override def addChar(): Unit = {
-    println("MADE IT TO ADDCHAR")
-    getNonBlank()
-    //lexLength = 0
     lexeme += nextChar
-    println("lexeme is in addchar " + lexeme)
   }
 
-
-  //Checks if current char is a space
-  def isSpace(c: Char): Boolean = {
+  //Returns true if character is equal to any of the CONSTANTS.WHITESPACE
+  private def isSpace(c: Char): Boolean = {
     c == ' ' | c == '\t' | c == '\n' | c == '\b' | c == '\f' | c == '\r' //CONSTANTS.WHITESPACE
   }
 
-
-  //Checks if character in nextChar is a legal lexeme
+  //Returns true if character in nextChar is a legal lexeme
   private def isLexeme(nextChar: Char): Boolean = {
-    println("MADE IT TO ISLEXEME")
     nextChar match {
       case '!' => true
       case '+' => true
@@ -47,14 +36,13 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       case '\\' => true
       case '#' => true
       case '*' => true
+      case '=' | '(' | ')' | ']' => true //added special characters
       case _ => false
     }
   }
 
-
-  //calls appropriate method depending on character
-  def caseswitch(c: Char) = {
-    println("c in caseswitch is " + c)
+  //Calls appropriate sub-method method depending on character (nextChar) passed in
+  private def caseswitch(c: Char) : Unit = {
     c match {
       case '!' => image(c)
       case '+' => listitem(c)
@@ -62,57 +50,55 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       case '\\' => newline(c)
       case '#' => heading(c)
       case '*' => bold(c)
-      case _ => text(c) //somethings wrong with text! need to change!
+      case '=' | '(' | ')' | ']' => other(c) //special characters calls other function
+      case _ => text(c) //default => text
     }
   }
 
+  //Returns true if candidate token is in list of lexems
   override def lookup(candidateToken: String): Boolean = {
-    println("I AM IN LOOKUP METHOD")
+    //println("I AM IN LOOKUP METHOD")
     if (!lexems.contains(candidateToken)) {
       println("Lexical error: " + candidateToken + " not recognized.")
       System.exit(1)
       false
     }
     else {
-      println("LOOKUP SUCCESS")
+      //println("LOOKUP SUCCESS")
       true
     }
   }
 
-  //keeps going until there is not a space
-  def getNonBlank(): Unit = {
+  //Loops until a space is not found
+  private def getNonBlank(): Unit = {
     while (isSpace(nextChar))
       getChar()
   }
 
+  //Calls switch statement to get next token
   override def getNextToken(): Unit = {
-    println("MADE IT TO GETNEXTTOKEN")
     lexeme = ""
     getNonBlank()
-    addChar()
-    getChar //nextChar = getChar() ??
 
-    //while(isSpace(nextChar)){
-    //addChar()
-    //nextChar = getChar() //getChar?
-
+    caseswitch(nextChar) //calls sub-method
   }
 
+  //Assigns the next character in sourceLine to be nextChar until the list is empty
   override def getChar(): Char = {
-    println("MADE IT TO GETCHAR")
+    //println("MADE IT TO GETCHAR")
     if (!sourceLine.isEmpty) {
       nextChar = sourceLine.head
-      sourceLine = sourceLine.tail //assigns everything else in list to sourceLine//need something else i think
+      sourceLine = sourceLine.tail //assigns everything else in list to soureLine//need something else i think
       nextChar
     }
     else {
-      println("Lexical error " + nextChar)
+      println("Lexical error with " + nextChar)
       System.exit(1)
       '\n'
     }
   }
 
-  //adds pre-defined lexems to the list buffer. Converts to regular list after all are added.
+  //Adds pre-defined lexems to mutable list buffer. Converts to immutable list at end.
   private def initializeLexems() : Unit = {
     lexems += CONSTANTS.DOCB
     lexems += CONSTANTS.DOCE
@@ -136,87 +122,95 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     lexems ++= CONSTANTS.WHITESPACE
     lexems ++= CONSTANTS.VALIDTEXT
 
-    lexems.toList //convert ListBuffer to List
+    lexems.toList //convert mutable ListBuffer to immutable List
   }
 
-
-  //called if token is text
+  //Sub method: Text (Default case of switch)
   private def text(c: Char) : Unit = {
-    println("tell ma i made it to text")
     addChar()
     getChar()
+
+    //keeps going until it finds another keyword char
+    while (!isLexeme(nextChar)) {
+      addChar()
+      getChar()
+    }
+    Compiler.currentToken = lexeme
+    Compiler.isText  = true
   }
 
-  //called if token is image- WORKING I THINK PARTY
-  private def image (c : Char) = {
-    println("Hello1 image")
-
+  //Sub method: Image
+  private def image (c : Char) : Unit = {
     addChar()
     getChar()
-
     if (nextChar == '[') {
-      println("made it here")
       addChar()
       getChar()
     }
-
     lookup(lexeme)
+    Compiler.currentToken = lexeme //assigns lexeme to global variable currentToken
   }
 
-
-  //called if token is list
+  //Sub method: List
   private def listitem(c: Char) : Unit = {
-
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
-      addChar()
-      getChar()
-      lookup(lexeme)
-    }
-  }
-
-  //called if token is link
-  private def link(c : Char) : Unit = {
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
-      addChar()
-      getChar()
-      lookup(lexeme)
-    }
-  }
-
-  //called if character is a newline, title, paragraph, variable define, or begin/end
-  private def newline(c : Char) = {
-    println("current token in newline " + Compiler.currentToken)
-
-    //Compiler.currentToken = "\\BEGIN"
-    addChar()
-    getChar()
-
-    if (!isSpace(nextChar)){
-      addChar()
-    }
-    else{
-      println("error- newline error")
-    }
-  }
-
-
-
-  //called if token heading
-  private def heading (c : Char) = {
     addChar()
     getChar()
     lookup(lexeme)
+    Compiler.currentToken = lexeme
   }
 
-  //called if token bold
-  private def bold(c : Char) = {
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)) {
-      addChar()
+  //Sub method: Link
+  private def link(c : Char) : Unit = {
+    addChar()
+    getChar()
+    lookup(lexeme)
+    Compiler.currentToken = lexeme
+  }
+
+  //Sub method: Newline, Title, Paragraph, Variable Define, Begin, or End
+  private def newline(c : Char) : Unit = {
+    addChar()
+    while (!isSpace(nextChar) && nextChar != '['){
+      if (lexeme.startsWith(CONSTANTS.DOCB)) {
+        Compiler.isEnd = true
+      }
       getChar()
-      if (nextChar == '*') {
+      if (!isSpace(nextChar)) {
         addChar()
       }
-      lookup(lexeme)
     }
+    if (lookup(lexeme)) {
+      Compiler.currentToken = lexeme
+    }
+    else {
+      println("Lexical error with " + Compiler.currentToken)
+    }
+    if (nextChar == '['){
+      getChar()
+    }
+  }
+
+  //Sub method: Heading
+  private def heading (c : Char) : Unit = {
+    addChar()
+    getChar()
+    lookup(lexeme)
+    Compiler.currentToken = lexeme
+  }
+
+  //Sub method: Bold
+  private def bold(c : Char) : Unit = {
+    addChar()
+    getChar()
+    lookup(lexeme)
+    Compiler.currentToken = lexeme
+  }
+
+  //called if token is other
+  private def other(c: Char) : Unit = {
+    addChar()
+    getChar()
+    lookup(lexeme)
+    Compiler.currentToken = lexeme
   }
 }
