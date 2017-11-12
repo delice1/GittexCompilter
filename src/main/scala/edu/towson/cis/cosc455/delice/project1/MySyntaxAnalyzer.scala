@@ -13,16 +13,22 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
 
   override def gittex(): Unit = {
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCB)) {
+      println("DOCB " + Compiler.currentToken)
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+        println("gittex defb")
         variableDefine()
       }
-      else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
+        println("gittex titleb")
         title()
       }
-      body()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEWLINE)){
+        body()
+      }
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE)) {
+        println("REACHED DOCE IN GITTEX")
         parseTree.push(Compiler.currentToken)
         Compiler.isEnd = true
       }
@@ -38,7 +44,30 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def paragraph(): Unit = {
-
+    println("MADE IT TO PARAGRAPH")
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+        variableDefine()
+      }
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
+        println("contains inner text in paragraph")
+        innerText()
+      }
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAE)){
+        parseTree.push(Compiler.currentToken)
+        Compiler.Scanner.getNextToken()
+      }
+      else{
+        println("Syntax error, PARAE " + Compiler.currentToken)
+        //System.exit(1)
+      }
+    }
+    else{
+      println("Syntax error, PARAB " + Compiler.currentToken)
+      //System.exit(1)
+    }
   }
 
   override def innerItem(): Unit = {
@@ -46,7 +75,13 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def innerText(): Unit = {
-
+    println("inner text " + Compiler.currentToken)
+    if (Compiler.isText){
+      parseTree.push(Compiler.currentToken)
+      Compiler.isText = false
+      Compiler.Scanner.getNextToken()
+      innerText()
+    }
   }
 
   override def link(): Unit = {
@@ -54,7 +89,21 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def body(): Unit = {
-
+    println("IN BODY")
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
+      println("IN PARAB IN BODY")
+      paragraph()
+      body()
+    }
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEWLINE)){
+      newline()
+      body()
+    }
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
+      innerText()
+      body()
+    }
+    println("REACHED END OF BODY")
   }
 
   override def bold(): Unit = {
@@ -76,8 +125,24 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)) {
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
-      //REQTEXT ... need to add
-      //BRACKETE ... need to add
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          Compiler.Scanner.getNextToken()
+          println("parse tree in title " + parseTree.reverse)
+        }
+        else{
+          println("syntax error, brackete in title " + Compiler.currentToken)
+          //System.exit(1)
+        }
+      }
+      else{
+        println("syntax error, reqtext in title " + Compiler.currentToken)
+        //System.exit(1)
+      }
     }
     else {
       println("SYNTAX ERROR - A title was expected when '" + Compiler.currentToken + "' was found")
