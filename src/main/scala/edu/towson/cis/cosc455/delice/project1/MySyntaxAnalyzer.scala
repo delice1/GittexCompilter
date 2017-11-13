@@ -6,27 +6,27 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
 {
   var parseTree = scala.collection.mutable.Stack[String]()
 
-  var errorFound : Boolean = false
-  def setError() = errorFound = true
-  def resetError() = errorFound = false
-  def getError : Boolean = errorFound
-
   override def gittex(): Unit = {
+    //DOCB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCB)) {
       println("DOCB " + Compiler.currentToken)
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
+      //VARIABLEDEFINE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
         println("gittex defb")
         variableDefine()
       }
+      //TITLE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
         println("gittex titleb")
         title()
       }
+      //BODY
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEWLINE)){
         body()
       }
+      //DOCE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE)) {
         println("REACHED DOCE IN GITTEX")
         parseTree.push(Compiler.currentToken)
@@ -45,16 +45,20 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
 
   override def paragraph(): Unit = {
     println("MADE IT TO PARAGRAPH")
+    //PARAB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
+      //VARIABLE DEFINE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
         variableDefine()
       }
+      //INNER TEXT
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
         println("contains inner text in paragraph")
         innerText()
       }
+      //PARAE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAE)){
         parseTree.push(Compiler.currentToken)
         Compiler.Scanner.getNextToken()
@@ -71,34 +75,135 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def innerItem(): Unit = {
-
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
+      variableUse()
+      innerItem()
+    }
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+      bold()
+      innerItem()
+    }
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
+      link()
+      innerItem()
+    }
+    if (Compiler.isText){
+      parseTree.push(Compiler.currentToken)
+      Compiler.isText = false
+      Compiler.Scanner.getNextToken()
+      innerItem()
+    }
   }
 
   override def innerText(): Unit = {
     println("inner text " + Compiler.currentToken)
+    //TEXT
     if (Compiler.isText){
       parseTree.push(Compiler.currentToken)
       Compiler.isText = false
       Compiler.Scanner.getNextToken()
       innerText()
     }
+    //VARIABLE USE
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
+      variableUse()
+      innerText()
+      }
+    //HEADING
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)){
+      heading()
+      innerText()
+    }
+    //BOLD
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+      bold()
+      innerText()
+    }
+    //LIST ITEM
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
+      listItem()
+      innerText()
+    }
+    //IMAGE
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)){
+      image()
+      innerText()
+    }
   }
 
   override def link(): Unit = {
-
+    //LINK
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      //TEXT
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        //BRACKETE
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          Compiler.Scanner.getNextToken()
+          //ADDRESSB
+          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
+            parseTree.push(Compiler.currentToken)
+            Compiler.Scanner.getNextToken()
+            //TEXT
+            if (Compiler.isText){
+              parseTree.push(Compiler.currentToken)
+              Compiler.isText = false
+              Compiler.Scanner.getNextToken()
+              //ADDRESSE
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
+                parseTree.push(Compiler.currentToken)
+                Compiler.Scanner.getNextToken()
+              }
+              else{
+                println("syntax error, address e in link " + Compiler.currentToken)
+                //System.exit(1)
+              }
+            }
+            else{
+              println("syntax error, text in link " + Compiler.currentToken)
+              //System.exit(1)
+            }
+          }
+          else{
+            println("syntax error, addressb in link " + Compiler.currentToken)
+            //System.exit(1)
+          }
+        }
+        else{
+          println("syntax error, brackete in link " + Compiler.currentToken)
+          //System.exit(1)
+        }
+      }
+      else{
+        println("syntax error, text in link " + Compiler.currentToken)
+        //System.exit(1)
+      }
+    }
+    else{
+      println("syntax error, linkb in link " + Compiler.currentToken)
+      //System.exit(1)
+    }
   }
 
   override def body(): Unit = {
     println("IN BODY")
+    //PARAB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
       println("IN PARAB IN BODY")
       paragraph()
       body()
     }
+    //NEWLINE
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEWLINE)){
       newline()
       body()
     }
+    //INNER TEXT
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
       innerText()
       body()
@@ -107,28 +212,58 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def bold(): Unit = {
-
-  }
-
-  override def newline(): Unit = {
-    /*
-    {
-      if ((NEWLINE contains Compiler.currentToken) || NEWLINE.isEmpty) //right idea, need different syntax
-        Compiler.Scanner.getNextToken()
-      else
-        println("SYNTAX ERROR - A new line was expected h")
-    }
-    */
-  }
-
-  override def title(): Unit = {
-    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)) {
+    //BOLD
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
       parseTree.push(Compiler.currentToken)
-      Compiler.Scanner.getNextToken()
+      //TEXT
       if (Compiler.isText){
         parseTree.push(Compiler.currentToken)
         Compiler.isText = false
         Compiler.Scanner.getNextToken()
+        //BOLD
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
+          parseTree.push(Compiler.currentToken)
+          Compiler.Scanner.getNextToken()
+        }
+        else{
+          println("syntax error, bold in bold " + Compiler.currentToken)
+          //System.exit(1)
+        }
+      }
+      else{
+        println("syntax error, text in bold " + Compiler.currentToken)
+        //System.exit(1)
+      }
+    }
+    else{
+      println("syntax error, bold in bold " + Compiler.currentToken)
+      //System.exit(1)
+    }
+  }
+
+  override def newline(): Unit = {
+    //NEWLINE
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEWLINE)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+    }
+    else{
+      println("syntax error, newline in newline " + Compiler.currentToken)
+      //System.exit(1)
+    }
+  }
+
+  override def title(): Unit = {
+    //TITLEB
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)) {
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      //TEXT
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        //BRACKETE
         if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
           parseTree.push(Compiler.currentToken)
           Compiler.Scanner.getNextToken()
@@ -151,37 +286,168 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def variableDefine(): Unit = {
+    //DEFB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)) {
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
-      //REQTEXT
-      //EQUAL SIGN
+      //TEXT
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        //EQSIGN
+        if (Compiler.currentToken.equals(CONSTANTS.EQSIGN)){
+        parseTree.push(Compiler.currentToken)
+        Compiler.Scanner.getNextToken()
+          //TEXT
+          if (Compiler.isText){
+            parseTree.push(Compiler.currentToken)
+            Compiler.isText = false
+            Compiler.Scanner.getNextToken()
+            //BRACKETE
+            if (Compiler.currentToken.equals(CONSTANTS.BRACKETE)){
+              parseTree.push(Compiler.currentToken)
+              Compiler.Scanner.getNextToken()
+              //VARIABLE DEFINE
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
+                variableDefine()
+              }
+            }
+            else{
+              println("Brackete required in var def" + Compiler.currentToken)
+              //System.exit(1)
+            }
+          }
+          else{
+            println("text required in var def " + Compiler.currentToken)
+            //System.exit(1)
+          }
+        }
+        else{
+          println("equal sign required in var def " + Compiler.currentToken)
+          //System.exit(1)
+        }
+      }
+      else{
+        println("text required in var def " + Compiler.currentToken)
+        //System.exit(1)
+      }
     }
     else {
       println("Syntax error , defb in var define " + Compiler.currentToken)
       //System.exit(1)
     }
-    //REQTEXT
-    //BRACKETE
-    variableDefine()
   }
 
   override def image(): Unit = {
-
+    //IMAGE
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      //TEXT
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        //BRACKETE
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          Compiler.Scanner.getNextToken()
+          //ADDRESSB
+          if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSB)){
+            parseTree.push(Compiler.currentToken)
+            Compiler.Scanner.getNextToken()
+            //TEXT
+            if (Compiler.isText){
+              parseTree.push(Compiler.currentToken)
+              Compiler.isText = false
+              Compiler.Scanner.getNextToken()
+              //ADDRESSE
+              if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.ADDRESSE)){
+                parseTree.push(Compiler.currentToken)
+                Compiler.Scanner.getNextToken()
+              }
+              else{
+                println("syntax error, addresse in image " + Compiler.currentToken)
+              }
+            }
+            else{
+              println("syntax error, text in image " + Compiler.currentToken)
+            }
+          }
+          else{
+            println("syntax error, addressb in image " + Compiler.currentToken)
+          }
+        }
+        else{
+          println("syntax error, brackete in image " + Compiler.currentToken)
+        }
+      }
+      else{
+        println("syntax error, text in image " + Compiler.currentToken)
+      }
+    }
+    else{
+      println("syntax error, imageb in image " + Compiler.currentToken)
+    }
   }
 
   override def variableUse(): Unit = {
-
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+        if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
+          parseTree.push(Compiler.currentToken)
+          Compiler.Scanner.getNextToken()
+        }
+        else{
+          println("syntax error, brackete in variable use " + Compiler.currentToken)
+        }
+      }
+      else{
+        println("syntax error, text in variable use " + Compiler.currentToken)
+      }
+    }
+    else{
+      println("syntax error, useb in variable use " + Compiler.currentToken)
+    }
   }
 
   override def heading(): Unit = {
-
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      if (Compiler.isText){
+        parseTree.push(Compiler.currentToken)
+        Compiler.isText = false
+        Compiler.Scanner.getNextToken()
+      }
+      else{
+        println("syntax error, text in heading " + Compiler.currentToken)
+      }
+    }
+    else{
+      println("syntax error, heading in heading " + Compiler.currentToken)
+    }
   }
 
   override def listItem(): Unit = {
-
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
+      parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
+        innerItem()
+      }
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB)){
+        listItem()
+      }
+    }
+    else{
+      println("syntax error, listitemb in listitem " + Compiler.currentToken)
+    }
   }
-
-  //def isEmpty() : Boolean //added myself.. who knows!
-
 }
