@@ -4,6 +4,8 @@ object Compiler
 {
   var currentToken : String = ""
   var fileContents : String = ""
+  var isEnd : Boolean = false
+  var isText : Boolean = false
 
   val Scanner = new MyLexicalAnalyzer
   val Parser = new MySyntaxAnalyzer
@@ -15,6 +17,12 @@ object Compiler
     readFile(args(0))
 
     Parser.gittex()
+
+    println(("PARSE TREE FINAL AFTER SYNTAX : "))
+    println(Parser.parseTree.reverse)
+
+    Parser.parseTree = Parser.parseTree.reverse
+    SemanticAnalyzer.startSemantic()
   }
 
   def readFile(file : String) =
@@ -33,7 +41,7 @@ object Compiler
     }
     else if (!args(0).endsWith(".gtx"))
     {
-      println("USAGE ERROR: wrong extension, the file should be a .gtx file.")
+      println("USAGE ERROR: wrong extension, file should be a .gtx file.")
       System.exit(1)
     }
   }
