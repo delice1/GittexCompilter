@@ -9,17 +9,14 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   override def gittex(): Unit = {
     //DOCB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCB)) {
-      println("DOCB " + Compiler.currentToken)
       parseTree.push(Compiler.currentToken)
       Compiler.Scanner.getNextToken()
       //VARIABLEDEFINE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEFB)){
-        println("gittex defb")
         variableDefine()
       }
       //TITLE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLEB)){
-        println("gittex titleb")
         title()
       }
       //BODY
@@ -28,7 +25,6 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       }
       //DOCE
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE)) {
-        println("REACHED DOCE IN GITTEX")
         parseTree.push(Compiler.currentToken)
         Compiler.isEnd = true
       }
@@ -44,7 +40,6 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def paragraph(): Unit = {
-    println("MADE IT TO PARAGRAPH")
     //PARAB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
       parseTree.push(Compiler.currentToken)
@@ -55,7 +50,6 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       }
       //INNER TEXT
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEADING) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LISTITEMB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMAGEB) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB) || Compiler.isText){
-        println("contains inner text in paragraph")
         innerText()
       }
       //PARAE
@@ -96,7 +90,6 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def innerText(): Unit = {
-    println("inner text " + Compiler.currentToken)
     //TEXT
     if (Compiler.isText){
       parseTree.push(Compiler.currentToken)
@@ -195,10 +188,8 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
   }
 
   override def body(): Unit = {
-    println("IN BODY")
     //PARAB
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARAB)){
-      println("IN PARAB IN BODY")
       paragraph()
       body()
     }
@@ -212,13 +203,13 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       innerText()
       body()
     }
-    println("REACHED END OF BODY")
   }
 
   override def bold(): Unit = {
     //BOLD
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
       parseTree.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
       //TEXT
       if (Compiler.isText){
         parseTree.push(Compiler.currentToken)
@@ -271,7 +262,6 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
         if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACKETE)){
           parseTree.push(Compiler.currentToken)
           Compiler.Scanner.getNextToken()
-          println("parse tree in title " + parseTree.reverse)
         }
         else{
           println("syntax error, brackete in title " + Compiler.currentToken)

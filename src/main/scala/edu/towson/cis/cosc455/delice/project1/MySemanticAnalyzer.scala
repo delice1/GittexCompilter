@@ -8,64 +8,28 @@ class MySemanticAnalyzer
 {
   var htmltree = scala.collection.mutable.Stack[String]()
   var htmltreestring : String = ""
-  var file_name = "project1code"
-  //htmltree = Compiler.Parser.parseTree
+  var file_name : String = "project1code.html"
 
   def getParseTreeHead() : String = {
     Parser.parseTree.head
   }
 
   def startSemantic () = {
-    println("START SEMANTIC")
-    //htmltree = htmltree.reverse
-    println(Compiler.Parser.parseTree)
     htmlcode()
 
-    //println(Compiler.Parser.parseTree)
-    //println("string " + htmltree.reverse.toString()) //converts htmltree reversed to a string
     htmltreestring = htmltree.reverse.toString()
     htmltreestring = htmltreestring.replace("Stack(","")
     htmltreestring = htmltreestring.replace(",","")
     htmltreestring = htmltreestring.replace("</html>)","</html>")
+
+    //Write text to a file
+    var html = new PrintWriter(new File(file_name))
+    html.write(htmltreestring)
+    html.close()
     openHTMLFileInBrowser(file_name)
-    //openHTMLFileInBrowser(htmltreestring)
   }
 
-  //DOCUMENT
-  // \BEGIN       = <html>
-  // \END         = </html>
-
-  //TITLE
-  // \TITLE[text] = <head> <title> TEXT </title> </head>
-
-  //HEADING
-  //# text        = <h1> </h1>
-
-  //PARAGRAPH
-  //\PARAB        = <p>
-  //\PARAE        = </p>
-
-  //BOLD
-  // * text *     = <b> </b>
-
-  //UNORDERED LIST
-  // + list item  = <li> </li>
-
-  //NEW LINE
-  //   //         = <br>
-
-  //LINKS
-  //[text](address)= <a href=" ADDRESS "> TEXT </a>
-
-  //IMAGES
-  //![text](address) = <img src="ADDRESS" alt="TEXT">
-
   private def htmlcode(): Unit ={
-    println("htmlcode beginning")
-    println((Compiler.Parser.parseTree.head))
-    println("REVERSED HTML TREE " )
-    println(htmltree.reverse)
-
     if (getParseTreeHead().equalsIgnoreCase(CONSTANTS.DOCB)){
       htmltree.push("<html>")
       Compiler.Parser.parseTree.pop()
@@ -140,9 +104,40 @@ class MySemanticAnalyzer
       Compiler.Parser.parseTree.pop()
       htmlcode()
     }
-    else if (Compiler.Parser.parseTree.head.equals(CONSTANTS.DOCE)){
+    else if (Compiler.Parser.parseTree.head.equalsIgnoreCase(CONSTANTS.DOCE)){
       htmltree.push("</html>")
       Compiler.Parser.parseTree.pop()
+    }
+    else if (Compiler.Parser.parseTree.head.equalsIgnoreCase(CONSTANTS.BOLD)){
+      htmltree.push("<b>")
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head)
+      Compiler.Parser.parseTree.pop()
+      htmltree.push("</b>")
+      Compiler.Parser.parseTree.pop()
+      htmlcode()
+    }
+    else if (Compiler.Parser.parseTree.head.equalsIgnoreCase(CONSTANTS.DEFB)){
+      htmltree.push(Compiler.Parser.parseTree.head) //\DEFB
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) //variable name
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) // =
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) // value
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) // ]
+      Compiler.Parser.parseTree.pop()
+      htmlcode()
+    }
+    else if (Compiler.Parser.parseTree.head.equalsIgnoreCase(CONSTANTS.USEB)){
+      htmltree.push(Compiler.Parser.parseTree.head) // \USE[
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) // variable name
+      Compiler.Parser.parseTree.pop()
+      htmltree.push(Compiler.Parser.parseTree.head) // ]
+      Compiler.Parser.parseTree.pop()
+      htmlcode()
     }
     else { //(Compiler.Parser.parseTree.head.isText){
       htmltree.push(Compiler.Parser.parseTree.head)
@@ -153,7 +148,6 @@ class MySemanticAnalyzer
 
   /* * Hack Scala/Java function to take a String filename and open in default web browswer. */
   def openHTMLFileInBrowser(htmlFileStr : String) = {
-    //println("HTML FS " + htmlFileStr) //htmlFileStr = project1code
     val file : File = new File(htmlFileStr.trim)
     println(file.getAbsolutePath)
     if (!file.exists())

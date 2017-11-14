@@ -179,7 +179,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
         addChar()
       }
     }
-    if (lookup(lexeme)) {
+    if (lookup(lexeme.toUpperCase)) {
       Compiler.currentToken = lexeme
     }
     else {
