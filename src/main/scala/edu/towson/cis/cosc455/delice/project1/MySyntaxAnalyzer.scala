@@ -34,12 +34,12 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       }
       else {
         println("Syntax error, looking for DOCE " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else {
       println("Syntax error, DOCB " + Compiler.currentToken )
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -65,12 +65,12 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       }
       else{
         println("Syntax error, PARAE " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else{
       println("Syntax error, PARAB " + Compiler.currentToken)
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -129,6 +129,10 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       image()
       innerText()
     }
+    if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINKB)){
+      link()
+      innerText()
+    }
   }
 
   override def link(): Unit = {
@@ -161,32 +165,32 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
               }
               else{
                 println("syntax error, address e in link " + Compiler.currentToken)
-                //System.exit(1)
+                System.exit(1)
               }
             }
             else{
               println("syntax error, text in link " + Compiler.currentToken)
-              //System.exit(1)
+              System.exit(1)
             }
           }
           else{
             println("syntax error, addressb in link " + Compiler.currentToken)
-            //System.exit(1)
+            System.exit(1)
           }
         }
         else{
           println("syntax error, brackete in link " + Compiler.currentToken)
-          //System.exit(1)
+          System.exit(1)
         }
       }
       else{
         println("syntax error, text in link " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else{
       println("syntax error, linkb in link " + Compiler.currentToken)
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -227,17 +231,17 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
         }
         else{
           println("syntax error, bold in bold " + Compiler.currentToken)
-          //System.exit(1)
+          System.exit(1)
         }
       }
       else{
         println("syntax error, text in bold " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else{
       println("syntax error, bold in bold " + Compiler.currentToken)
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -249,7 +253,7 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
     }
     else{
       println("syntax error, newline in newline " + Compiler.currentToken)
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -271,17 +275,17 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
         }
         else{
           println("syntax error, brackete in title " + Compiler.currentToken)
-          //System.exit(1)
+          System.exit(1)
         }
       }
       else{
         println("syntax error, reqtext in title " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else {
       println("SYNTAX ERROR - A title was expected when '" + Compiler.currentToken + "' was found")
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -315,27 +319,27 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
             }
             else{
               println("Brackete required in var def" + Compiler.currentToken)
-              //System.exit(1)
+              System.exit(1)
             }
           }
           else{
             println("text required in var def " + Compiler.currentToken)
-            //System.exit(1)
+            System.exit(1)
           }
         }
         else{
           println("equal sign required in var def " + Compiler.currentToken)
-          //System.exit(1)
+          System.exit(1)
         }
       }
       else{
         println("text required in var def " + Compiler.currentToken)
-        //System.exit(1)
+        System.exit(1)
       }
     }
     else {
       println("Syntax error , defb in var define " + Compiler.currentToken)
-      //System.exit(1)
+      System.exit(1)
     }
   }
 
@@ -369,26 +373,32 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
               }
               else{
                 println("syntax error, addresse in image " + Compiler.currentToken)
+                System.exit(1)
               }
             }
             else{
               println("syntax error, text in image " + Compiler.currentToken)
+              System.exit(1)
             }
           }
           else{
             println("syntax error, addressb in image " + Compiler.currentToken)
+            System.exit(1)
           }
         }
         else{
           println("syntax error, brackete in image " + Compiler.currentToken)
+          System.exit(1)
         }
       }
       else{
         println("syntax error, text in image " + Compiler.currentToken)
+        System.exit(1)
       }
     }
     else{
       println("syntax error, imageb in image " + Compiler.currentToken)
+      System.exit(1)
     }
   }
 
@@ -406,14 +416,17 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
         }
         else{
           println("syntax error, brackete in variable use " + Compiler.currentToken)
+          System.exit(1)
         }
       }
       else{
         println("syntax error, text in variable use " + Compiler.currentToken)
+        System.exit(1)
       }
     }
     else{
       println("syntax error, useb in variable use " + Compiler.currentToken)
+      System.exit(1)
     }
   }
 
@@ -428,10 +441,12 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       }
       else{
         println("syntax error, text in heading " + Compiler.currentToken)
+        System.exit(1)
       }
     }
     else{
       println("syntax error, heading in heading " + Compiler.currentToken)
+      System.exit(1)
     }
   }
 
@@ -448,6 +463,7 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
     }
     else{
       println("syntax error, listitemb in listitem " + Compiler.currentToken)
+      System.exit(1)
     }
   }
 }

@@ -65,7 +65,7 @@ class MySemanticAnalyzer
     println((Compiler.Parser.parseTree.head))
     println("REVERSED HTML TREE " )
     println(htmltree.reverse)
-    
+
     if (getParseTreeHead().equalsIgnoreCase(CONSTANTS.DOCB)){
       htmltree.push("<html>")
       Compiler.Parser.parseTree.pop()

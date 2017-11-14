@@ -36,7 +36,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       case '\\' => true
       case '#' => true
       case '*' => true
-      case '=' | '(' | ')' | ']' => true //added special characters
+      case '=' | '(' | ')' | ']' => true //EQSIGN, ADDRESSB, ADDRESSE, BRACKETE
       case _ => false
     }
   }
@@ -50,7 +50,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
       case '\\' => newline(c)
       case '#' => heading(c)
       case '*' => bold(c)
-      case '=' | '(' | ')' | ']' => other(c) //special characters calls other function
+      case '=' | '(' | ')' | ']' => other(c) //EQSIGN, ADDRESSB, ADDRESSE, BRACKETE
       case _ => text(c) //default => text
     }
   }
@@ -88,7 +88,7 @@ class MyLexicalAnalyzer extends LexicalAnalyzer {
     //println("MADE IT TO GETCHAR")
     if (!sourceLine.isEmpty) {
       nextChar = sourceLine.head
-      sourceLine = sourceLine.tail //assigns everything else in list to soureLine//need something else i think
+      sourceLine = sourceLine.tail //assigns everything else in list to soureLine
       nextChar
     }
     else {
