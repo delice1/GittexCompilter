@@ -27,6 +27,10 @@ class MySyntaxAnalyzer extends SyntaxAnalyzer
       if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOCE)) {
         parseTree.push(Compiler.currentToken)
         Compiler.isEnd = true
+        if (Compiler.Scanner.sourceLine.length > 1){
+          println("Syntax error, nothing allowed after \\END")
+          System.exit(1)
+        }
       }
       else {
         println("Syntax error, looking for DOCE " + Compiler.currentToken)
