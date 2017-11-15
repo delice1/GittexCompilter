@@ -47,7 +47,7 @@ class MySemanticAnalyzer
       Compiler.Parser.parseTree.pop() //The Simpsons
       //htmltree.push(Compiler.Parser.parseTree.head)
       Compiler.Parser.parseTree.pop()
-      htmltree.push("</title").push("<head>")
+      htmltree.push("</title>").push("<head>")
       htmlcode()
     }
     //HEADING
@@ -82,7 +82,7 @@ class MySemanticAnalyzer
     }
     //PARAE
     else if (Compiler.Parser.parseTree.head.equalsIgnoreCase(CONSTANTS.PARAE)){
-      htmltree.push("</p")
+      htmltree.push("</p>")
       Compiler.Parser.parseTree.pop()
       htmlcode()
     }
